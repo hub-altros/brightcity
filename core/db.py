@@ -17,16 +17,44 @@ logger = logging.getLogger("bright_city_bot")
 
 load_dotenv(encoding="utf-8")
 
-DB_CONFIG = {
-    "dbname": os.getenv("DB_NAME"),
-    "user": os.getenv("DB_USER"),
-    "password": os.getenv("DB_PASSWORD"),
-    "host": os.getenv("DB_HOST", "localhost"),
-    "port": int(os.getenv("DB_PORT") or "5432"),
-    "connect_timeout": int(os.getenv("DB_CONNECT_TIMEOUT") or "5"),
-    "sslmode": os.getenv("DB_SSLMODE", "require"),
-    "application_name": os.getenv("DB_APP_NAME", "bright_city_bot"),
-}
+# ─── Подключение к PostgreSQL ────────────────────────────────────────
+# Приоритет: DATABASE_URL (Render / Neon) > отдельные DB_* (локально).
+
+_DATABASE_URL = os.getenv("DATABASE_URL")
+
+if _DATABASE_URL:
+    # Render/Neon: единая строка вида
+    # postgresql://user:pass@host:5432/dbname?sslmode=require
+    from urllib.parse import urlparse, unquote
+    _u = urlparse(_DATABASE_URL)
+    DB_CONFIG = {
+        "dbname": (_u.path or "").lstrip("/") or None,
+        "user": unquote(_u.username) if _u.username else None,
+        "password": unquote(_u.password) if _u.password else None,
+        "host": _u.hostname,
+        "port": _u.port or 5432,
+        "connect_timeout": int(os.getenv("DB_CONNECT_TIMEOUT") or "5"),
+        "sslmode": "require",  # Neon всегда требует SSL
+        "application_name": os.getenv("DB_APP_NAME", "bright_city_bot"),
+    }
+else:
+    # Локальная разработка — отдельные переменные из .env
+    DB_CONFIG = {
+        "dbname": os.getenv("DB_NAME"),
+        "user": os.getenv("DB_USER"),
+        "password": os.getenv("DB_PASSWORD"),
+        "host": os.getenv("DB_HOST", "localhost"),
+        "port": int(os.getenv("DB_PORT") or "5432"),
+        "connect_timeout": int(os.getenv("DB_CONNECT_TIMEOUT") or "5"),
+        "sslmode": os.getenv("DB_SSLMODE", "require"),
+        "application_name": os.getenv("DB_APP_NAME", "bright_city_bot"),
+    }
+
+for _key in ["dbname", "user", "password", "host"]:
+    if not DB_CONFIG[_key]:
+        raise RuntimeError(f"Не задано DB_{_key.upper()} (или DATABASE_URL)")
+if not isinstance(DB_CONFIG["port"], int) or DB_CONFIG["port"] <= 0:
+    raise RuntimeError("DB_PORT должен быть положительным целым числом")
 
 for _key in ["dbname", "user", "password", "host"]:
     if not DB_CONFIG[_key]:
