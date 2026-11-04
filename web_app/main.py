@@ -188,6 +188,19 @@ from web_app.api import stats as api_stats
 from web_app.api import chats as api_chats
 from web_app.api import media as api_media
 
+from fastapi.middleware.cors import CORSMiddleware
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "https://hub-altros.github.io",   # ← твой GitHub Pages
+        "http://localhost:5173",          # локальная разработка
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 app.include_router(api_auth.router)
 app.include_router(api_apps.router)
 app.include_router(api_gdpr.router)
