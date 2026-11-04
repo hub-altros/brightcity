@@ -5,6 +5,11 @@ import os
 import re
 from contextlib import asynccontextmanager
 
+# ─── Env defaults для веб-процесса ───────────────────────────────────
+os.environ.setdefault("ADMIN_ID", "0")
+os.environ.setdefault("VK_BOT_TOKEN", "fake-token-for-web-import")
+# ─────────────────────────────────────────────────────────────────────
+
 from fastapi import FastAPI
 from fastapi.responses import FileResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
