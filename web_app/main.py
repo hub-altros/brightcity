@@ -120,6 +120,18 @@ async def lifespan(app: FastAPI):
 app = FastAPI(title="Яркий!Город — Админка", lifespan=lifespan,
               docs_url=None, redoc_url=None)
 
+# CORS — ПЕРВЫМ, чтобы preflight-запросы OPTIONS обрабатывались до auth
+from fastapi.middleware.cors import CORSMiddleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "https://hub-altros.github.io",
+        "http://localhost:5173",
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # --- Middleware ---
 
@@ -187,19 +199,6 @@ from web_app.api import gdpr as api_gdpr
 from web_app.api import stats as api_stats
 from web_app.api import chats as api_chats
 from web_app.api import media as api_media
-
-from fastapi.middleware.cors import CORSMiddleware
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=[
-        "https://hub-altros.github.io",   # ← твой GitHub Pages
-        "http://localhost:5173",          # локальная разработка
-    ],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
 
 app.include_router(api_auth.router)
 app.include_router(api_apps.router)
