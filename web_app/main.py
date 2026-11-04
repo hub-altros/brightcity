@@ -199,9 +199,13 @@ app.include_router(api_media.legacy_router)  # /media/* (React и боты)
 
 # --- Корневые и PWA-эндпоинты ---
 
-@app.get("/")
+@app.api_route("/", methods=["GET", "HEAD"])
 async def _root():
-    return RedirectResponse("/applications", status_code=303)
+    return {
+        "service": "Яркий!Город — API",
+        "status": "ok",
+        "docs": "API endpoints под /api/*, фронтенд — на GitHub Pages",
+    }
 
 
 @app.get("/manifest.json")
