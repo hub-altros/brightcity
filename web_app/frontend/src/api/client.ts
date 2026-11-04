@@ -1,3 +1,5 @@
+const API_URL = import.meta.env.VITE_API_URL || "";
+
 export class ApiError extends Error {
   status: number;
   constructor(status: number, message: string) {
@@ -8,7 +10,8 @@ export class ApiError extends Error {
 
 export async function api<T>(path: string, init?: RequestInit): Promise<T> {
   const isJson = !init?.body || typeof init.body === "string";
-  const res = await fetch(path, {
+  const url = `${API_URL}${path}`;
+  const res = await fetch(url, {
     ...init,
     credentials: "include",
     headers: {
@@ -18,7 +21,9 @@ export async function api<T>(path: string, init?: RequestInit): Promise<T> {
   });
   if (res.status === 401) {
     if (!path.startsWith("/api/auth/")) {
-      window.location.href = "/login";
+      // На GitHub Pages login живёт по /<repo>/login, а не /login.
+      // import.meta.env.BASE_URL = '/brightcity/' (из vite.config.ts base)
+      window.location.href = `${import.meta.env.BASE_URL}login`;
     }
     throw new ApiError(401, "unauthorized");
   }
