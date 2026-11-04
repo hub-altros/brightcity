@@ -135,8 +135,8 @@ app.add_middleware(
     secret_key=_web_secret,
     session_cookie="yg_pending",
     max_age=3600,
-    same_site="lax",
-    https_only=False,
+    same_site="none",
+    https_only=True,
 )
 
 

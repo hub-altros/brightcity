@@ -99,8 +99,10 @@ async def setup_complete(request: Request):
     resp = JSONResponse({"ok": True})
     resp.set_cookie(
         SESSION_COOKIE, sign_session(session_id),
-        max_age=SESSION_MAX_AGE, httponly=True, samesite="lax",
-        secure=request.url.scheme == "https",
+        max_age=SESSION_MAX_AGE,
+        httponly=True,
+        samesite="none",     # ← для cross-site GitHub Pages → Render
+        secure=True,         # ← обязательно вместе с samesite="none"
     )
     return resp
 
@@ -137,8 +139,10 @@ async def verify_submit(request: Request, body: dict):
     resp = JSONResponse({"ok": True})
     resp.set_cookie(
         SESSION_COOKIE, sign_session(session_id),
-        max_age=SESSION_MAX_AGE, httponly=True, samesite="lax",
-        secure=request.url.scheme == "https",
+        max_age=SESSION_MAX_AGE,
+        httponly=True,
+        samesite="none",     # ← для cross-site
+        secure=True,         # ← обязательно
     )
     return resp
 
@@ -150,5 +154,10 @@ async def logout(request: Request):
     if sid:
         delete_session(sid)
     resp = JSONResponse({"ok": True})
-    resp.delete_cookie(SESSION_COOKIE)
+    # Удалять cookie нужно с теми же флагами, иначе браузер её не тронет
+    resp.delete_cookie(
+        SESSION_COOKIE,
+        samesite="none",
+        secure=True,
+    )
     return resp
