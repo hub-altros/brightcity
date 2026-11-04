@@ -1,0 +1,8 @@
+fastapi>=0.115
+uvicorn[standard]>=0.32
+jinja2>=3.1
+python-multipart>=0.0.12
+pyotp>=2.9
+qrcode[pil]>=7.4
+itsdangerous>=2.0
+truststore>=0.10

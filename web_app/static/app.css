@@ -1,0 +1,36 @@
+* { -webkit-tap-highlight-color: transparent; }
+body { -webkit-font-smoothing: antialiased; }
+.safe-bottom { padding-bottom: max(0.75rem, env(safe-area-inset-bottom, 0.75rem)); }
+.safe-top { padding-top: max(0px, env(safe-area-inset-top, 0px)); }
+
+.nav-item {
+  display: flex; align-items: center; gap: 0.75rem;
+  padding: 0.625rem 0.75rem; border-radius: 0.5rem;
+  font-size: 0.875rem; color: #334155;
+}
+.nav-item:hover { background: #f1f5f9; }
+.nav-item.is-active { background: #fff7ed; color: #c2410c; font-weight: 600; }
+
+.nav-bottom-item {
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: center; gap: 0.125rem;
+  font-size: 0.7rem; font-weight: 500; color: #94a3b8;
+}
+.nav-bottom-item.is-active { color: #ea580c; }
+
+.chip-scroll { overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+.chip-scroll::-webkit-scrollbar { display: none; }
+
+.status-dot { display: inline-block; width: 6px; height: 6px; border-radius: 9999px; }
+.status-new { background: #dbeafe; color: #1d4ed8; }
+.status-new .status-dot { background: #3b82f6; }
+.status-progress { background: #fef3c7; color: #b45309; }
+.status-progress .status-dot { background: #f59e0b; }
+.status-waiting { background: #ffedd5; color: #c2410c; }
+.status-waiting .status-dot { background: #f97316; }
+.status-done { background: #dcfce7; color: #15803d; }
+.status-done .status-dot { background: #22c55e; }
+.status-rejected { background: #fee2e2; color: #b91c1c; }
+.status-rejected .status-dot { background: #ef4444; }
+
+.thumb { object-fit: cover; }

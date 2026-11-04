@@ -1,0 +1,112 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── Базовые ──────────────────────────────────────────── */
+* { -webkit-tap-highlight-color: transparent; }
+body { -webkit-font-smoothing: antialiased; }
+
+.safe-bottom { padding-bottom: max(0.75rem, env(safe-area-inset-bottom, 0.75rem)); }
+.safe-top { padding-top: max(0px, env(safe-area-inset-top, 0px)); }
+
+.chip-scroll { overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+.chip-scroll::-webkit-scrollbar { display: none; }
+
+/* ── Статусные бейджи ─────────────────────────────────── */
+.status-dot { display: inline-block; width: 6px; height: 6px; border-radius: 9999px; }
+.status-new { background: #dbeafe; color: #1d4ed8; }
+.status-new .status-dot { background: #3b82f6; }
+.status-progress { background: #fef3c7; color: #b45309; }
+.status-progress .status-dot { background: #f59e0b; }
+.status-waiting { background: #ffedd5; color: #c2410c; }
+.status-waiting .status-dot { background: #f97316; }
+.status-done { background: #dcfce7; color: #15803d; }
+.status-done .status-dot { background: #22c55e; }
+.status-rejected { background: #fee2e2; color: #b91c1c; }
+.status-rejected .status-dot { background: #ef4444; }
+
+.thumb { object-fit: cover; }
+
+/* ── Тёмная тема ──────────────────────────────────────── */
+
+/* Плавный переход при смене темы (только фона/цвета) */
+html, body {
+  transition: background-color 150ms ease, color 150ms ease;
+}
+
+/* Основной фон и текст — для страниц без bg-white-обёртки */
+.dark body         { background-color: #0f172a; color: #e2e8f0; }
+
+/* Фоны карточек/панелей */
+.dark .bg-white      { background-color: #1e293b; }
+.dark .bg-slate-50   { background-color: #0f172a; }
+.dark .bg-slate-100  { background-color: #334155; }
+.dark .bg-slate-200  { background-color: #475569; }
+.dark .bg-slate-900  { background-color: #e2e8f0; color: #0f172a; }
+
+/* Полупрозрачные фоны (мобильные шапки с backdrop-blur) */
+.dark .bg-white\/95 { background-color: rgba(30, 41, 59, 0.95); }
+.dark .bg-white\/90 { background-color: rgba(30, 41, 59, 0.90); }
+
+/* Текст */
+.dark .text-slate-900 { color: #f8fafc; }
+.dark .text-slate-800 { color: #f1f5f9; }
+.dark .text-slate-700 { color: #e2e8f0; }
+.dark .text-slate-600 { color: #cbd5e1; }
+.dark .text-slate-500 { color: #94a3b8; }
+.dark .text-slate-400 { color: #64748b; }
+.dark .text-slate-300 { color: #475569; }
+
+/* Границы */
+.dark .border-slate-200 { border-color: #334155; }
+.dark .border-slate-100 { border-color: #1e293b; }
+.dark .border-slate-300 { border-color: #475569; }
+.dark .divide-slate-100 > * + * { border-color: #1e293b; }
+.dark .divide-slate-200 > * + * { border-color: #334155; }
+
+/* Hover-фоны */
+.dark .hover\:bg-slate-50:hover  { background-color: #1e293b; }
+.dark .hover\:bg-slate-100:hover { background-color: #334155; }
+.dark .hover\:bg-slate-200:hover { background-color: #475569; }
+
+/* Бренд */
+.dark .bg-brand-50  { background-color: #431407; }
+.dark .bg-brand-100 { background-color: #7c2d12; }
+.dark .text-brand-600 { color: #fb923c; }
+.dark .text-brand-700 { color: #fdba74; }
+.dark .text-brand-800 { color: #fdba74; }
+
+/* Статусные бейджи — переопределяем в тёмной теме */
+.dark .status-new      { background: #1e3a8a; color: #bfdbfe; }
+.dark .status-progress { background: #78350f; color: #fde68a; }
+.dark .status-waiting  { background: #7c2d12; color: #fed7aa; }
+.dark .status-done     { background: #14532d; color: #bbf7d0; }
+.dark .status-rejected { background: #7f1d1d; color: #fecaca; }
+
+/* Инпуты/селекты */
+.dark input::placeholder,
+.dark textarea::placeholder { color: #64748b; }
+.dark select { color-scheme: dark; }
+
+/* Превью-картинки — чуть приглушить */
+.dark .thumb { filter: brightness(0.9); }
+
+/* Навигация (если понадобится, когда вынесешь в CSS-классы) */
+.nav-item {
+  display: flex; align-items: center; gap: 0.75rem;
+  padding: 0.625rem 0.75rem; border-radius: 0.5rem;
+  font-size: 0.875rem; color: #334155;
+}
+.nav-item:hover { background: #f1f5f9; }
+.nav-item.is-active { background: #fff7ed; color: #c2410c; font-weight: 600; }
+
+.dark .nav-item { color: #cbd5e1; }
+.dark .nav-item:hover { background: #334155; }
+.dark .nav-item.is-active { background: #431407; color: #fdba74; }
+
+.nav-bottom-item {
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: center; gap: 0.125rem;
+  font-size: 0.65rem; font-weight: 500; color: #94a3b8;
+}
+.nav-bottom-item.is-active { color: #ea580c; }
