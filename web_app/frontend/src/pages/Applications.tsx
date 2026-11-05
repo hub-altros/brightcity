@@ -26,6 +26,7 @@ const SORT_COLUMNS: Sortable[] = [
 const SEARCH_DEBOUNCE_MS = 400;
 const SORT_STORAGE_KEY = "yg_admin_sort_v1";
 const STATUS_STORAGE_KEY = "yg_admin_status_v1";
+const AUTO_REFRESH_STORAGE_KEY = "yg_admin_auto_refresh_v1";
 
 type SortState = { sort: string; dir: "asc" | "desc" };
 const _DEFAULT_SORT: SortState = { sort: "created_at", dir: "asc" };
@@ -106,7 +107,14 @@ export default function Applications() {
   const savedStatus = useMemo(() => _loadStatusFromStorage(), []);
 
   // ── Автообновление списка (15 секунд) ─────────────────────
-  const [autoRefresh, setAutoRefresh] = useState(true);
+  const [autoRefresh, setAutoRefresh] = useState<boolean>(() => {
+    try {
+      const saved = localStorage.getItem(AUTO_REFRESH_STORAGE_KEY);
+      return saved !== null ? saved === "true" : true; // по умолчанию true
+    } catch {
+      return true;
+    }
+  });
 
   useEffect(() => {
     if (sp.has("status")) return;
@@ -125,6 +133,10 @@ export default function Applications() {
   useEffect(() => {
     try { localStorage.setItem(SORT_STORAGE_KEY, JSON.stringify(sortState)); } catch {}
   }, [sortState]);
+
+  useEffect(() => {
+    try { localStorage.setItem(AUTO_REFRESH_STORAGE_KEY, String(autoRefresh)); } catch {}
+  }, [autoRefresh]);
 
   const [qInput, setQInput] = useState(q);
   useEffect(() => { setQInput(q); }, [q]);
