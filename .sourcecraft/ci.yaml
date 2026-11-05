@@ -35,5 +35,5 @@ tasks:
           - git commit -m "Deploy to SourceCraft Sites"
           - git push -f origin site
           - git checkout main
-          - git remote add github https://hub-altros:${GITHUB_TOKEN}@github.com/hub-altros/brightcity.git
+          - git remote add github https://hub-altros:${{ secrets.GITHUB_TOKEN }}@github.com/hub-altros/brightcity.git
           - git push github main
