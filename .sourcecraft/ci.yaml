@@ -2,7 +2,7 @@ on:
   push:
     - workflows: [build-and-deploy]
       filter:
-        branches: ["site"]
+        branches: ["main"]
 
 workflows:
   build-and-deploy:
