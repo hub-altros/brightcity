@@ -212,6 +212,11 @@ app.include_router(api_media.legacy_router)  # /media/* (React и боты)
 
 # --- Корневые и PWA-эндпоинты ---
 
+# ДОБАВЛЕННЫЙ ЭНДПОИНТ ДЛЯ UPTIMEROBOT
+@app.get("/health")
+async def health_check():
+    return {"status": "ok", "message": "Server is awake"}
+
 @app.api_route("/", methods=["GET", "HEAD"])
 async def _root():
     return {
