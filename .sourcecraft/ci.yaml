@@ -30,6 +30,7 @@ tasks:
           - git fetch origin
           - git checkout --orphan site
           - git rm -rf .
+          - git clean -fdx
           - cp -r /tmp/site-dist/* .
           - git add .
           - git commit -m "Deploy to SourceCraft Sites"
