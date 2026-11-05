@@ -5,6 +5,9 @@ import time
 import json
 import logging
 import threading
+import glob
+import re
+from urllib.parse import urlparse, unquote
 
 from dotenv import load_dotenv
 from psycopg2.extras import Json
@@ -25,7 +28,6 @@ _DATABASE_URL = os.getenv("DATABASE_URL")
 if _DATABASE_URL:
     # Render/Neon: единая строка вида
     # postgresql://user:pass@host:5432/dbname?sslmode=require
-    from urllib.parse import urlparse, unquote
     _u = urlparse(_DATABASE_URL)
     DB_CONFIG = {
         "dbname": (_u.path or "").lstrip("/") or None,
@@ -53,12 +55,6 @@ else:
 for _key in ["dbname", "user", "password", "host"]:
     if not DB_CONFIG[_key]:
         raise RuntimeError(f"Не задано DB_{_key.upper()} (или DATABASE_URL)")
-if not isinstance(DB_CONFIG["port"], int) or DB_CONFIG["port"] <= 0:
-    raise RuntimeError("DB_PORT должен быть положительным целым числом")
-
-for _key in ["dbname", "user", "password", "host"]:
-    if not DB_CONFIG[_key]:
-        raise RuntimeError(f"Не задано DB_{_key.upper()} в .env")
 if not isinstance(DB_CONFIG["port"], int) or DB_CONFIG["port"] <= 0:
     raise RuntimeError("DB_PORT должен быть положительным целым числом")
 
@@ -204,6 +200,70 @@ def _runtime_platform():
 
 # --- ЗАПУСК МИГРАЦИЙ ---
 
+def _apply_sql_migrations(conn):
+    """Применяет непримененные .sql файлы из папки migrations."""
+    migrations_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "migrations")
+    if not os.path.exists(migrations_dir):
+        logger.warning("Папка миграций не найдена: %s", migrations_dir)
+        return
+
+    with conn.cursor() as cur:
+        # Создаем таблицу для отслеживания примененных миграций
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS schema_migrations (
+                version VARCHAR(255) PRIMARY KEY,
+                applied_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+            )
+        """)
+        conn.commit()
+
+        # Получаем список уже примененных миграций
+        cur.execute("SELECT version FROM schema_migrations")
+        applied = {row[0] for row in cur.fetchall()}
+
+        # Получаем все .sql файлы и сортируем их по имени (M0, M1, M2...)
+        sql_files = sorted(glob.glob(os.path.join(migrations_dir, "*.sql")))
+
+        for file_path in sql_files:
+            filename = os.path.basename(file_path)
+            version = filename[:-4]  # убираем .sql
+
+            if version in applied:
+                continue
+
+            logger.info("Применяем миграцию: %s", filename)
+            with open(file_path, "r", encoding="utf-8") as f:
+                sql_content = f.read()
+
+            # Убираем BEGIN; и COMMIT; (только если они стоят отдельной строкой)
+            # Это не затронет BEGIN внутри блоков DO $$ ... $$;
+            sql_content = re.sub(r'^[ \t]*(BEGIN|COMMIT);[ \t]*$', '', sql_content, flags=re.IGNORECASE | re.MULTILINE)
+
+            try:
+                cur.execute(sql_content)
+                cur.execute(
+                    "INSERT INTO schema_migrations (version) VALUES (%s)",
+                    (version,)
+                )
+                conn.commit()
+                logger.info("Миграция %s успешно применена.", filename)
+            except (psycopg2.errors.DuplicateColumn, psycopg2.errors.UniqueViolation, psycopg2.errors.DuplicateTable) as e:
+                # Если объекты уже существуют (например, из-за ensure_schema), просто записываем миграцию как примененную
+                conn.rollback()
+                logger.warning("Миграция %s: объекты уже существуют, пропускаем. (%s)", filename, e)
+                with conn.cursor() as cur2:
+                    cur2.execute(
+                        "INSERT INTO schema_migrations (version) VALUES (%s) ON CONFLICT DO NOTHING",
+                        (version,)
+                    )
+                conn.commit()
+            except Exception as e:
+                conn.rollback()
+                logger.error("Ошибка при применении миграции %s: %s", filename, e)
+                logger.error("Текст проблемного SQL (первые 500 символов):\n%s", sql_content[:500])
+                raise
+
+
 def run_migrations(max_attempts=6, delay_sec=5):
     last_err = None
     for attempt in range(1, max_attempts + 1):
@@ -211,10 +271,15 @@ def run_migrations(max_attempts=6, delay_sec=5):
         try:
             conn = get_db_connection()
 
+            # 1. Базовые таблицы из кода (если они там есть)
             with conn.cursor() as cur:
                 ensure_schema(cur)
             conn.commit()
 
+            # 2. ВЫПОЛНЕНИЕ SQL-ФАЙЛОВ ИЗ ПАПКИ MIGRATIONS
+            _apply_sql_migrations(conn)
+
+            # 3. Дополнительные проверки колонок (fallback)
             _ensure_media_files_columns(conn)
             conn.commit()
 
