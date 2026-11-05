@@ -34,4 +34,6 @@ tasks:
           - git add .
           - git commit -m "Deploy to SourceCraft Sites"
           - git push -f origin site
-          - curl -X GET "https://api.render.com/deploy/srv-dbljoamc6qcc73bkagug?key=atVJkLvFv8Y"
+          - git checkout main
+          - git remote add github https://hub-altros:${GITHUB_TOKEN}@github.com/hub-altros/brightcity.git
+          - git push github main
