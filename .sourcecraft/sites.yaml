@@ -1,4 +1,3 @@
-# .sourcecraft/sites.yaml
 site:
   root: "."
   ref: "site"
