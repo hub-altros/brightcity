@@ -1,0 +1,32 @@
+# .sourcecraft/ci.yaml
+on:
+  push:
+    branches: [main]
+
+workflows:
+  build-and-deploy:
+    tasks:
+      - name: build-and-publish
+        cubes:
+          - name: node
+            image: node:22
+            env:
+              VITE_API_URL: "https://brightcity.onrender.com"
+            script:
+              - apt-get update && apt-get install -y git
+              - cd web_app/frontend
+              - npm ci
+              - npm run build
+              - cd ../..
+              - rm -rf /tmp/site-dist && mkdir -p /tmp/site-dist
+              - cp -r web_app/frontend/dist/* /tmp/site-dist/
+              - git config --global user.email "ci@sourcecraft.dev"
+              - git config --global user.name "SourceCraft CI"
+              - git remote set-url origin https://ci:${SOURCECRAFT_TOKEN}@git.sourcecraft.dev/sourcecraft20/brightcity.git
+              - git fetch origin site || true
+              - git checkout site || git checkout --orphan site
+              - git rm -rf . || true
+              - cp -r /tmp/site-dist/* .
+              - git add .
+              - git commit -m "Deploy to SourceCraft Sites" || true
+              - git push origin site
