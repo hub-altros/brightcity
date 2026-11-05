@@ -125,6 +125,7 @@ from fastapi.middleware.cors import CORSMiddleware
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
+        "https://sourcecraft20.sourcecraft.site",
         "https://hub-altros.github.io",
         "http://localhost:5173",
     ],
